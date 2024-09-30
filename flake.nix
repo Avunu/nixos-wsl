@@ -41,7 +41,7 @@
                 enable = true;
                 allowReboot = false;
                 dates = "daily";
-                flake = "github:YourGitHubUsername/your-nixos-config";
+                flake = "github:Avunu/nixos-wsl";
                 flags = [
                   "--update-input"
                   "nixpkgs"
