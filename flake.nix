@@ -12,8 +12,8 @@
         modules = [
           nixos-wsl.nixosModules.default
           vscode-server.nixosModules.default
-          {
-            environment.systemPackages = with nixpkgs; [
+          ({ pkgs, ... }: {
+            environment.systemPackages = with pkgs; [
                 bun
                 curl
                 git
@@ -25,24 +25,42 @@
                 wget
                 yarn
             ];
+
             nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
             programs.nix-ld = {
                 enable = true;
-                package = nixpkgs.nix-ld-rs;
+                package = pkgs.nix-ld-rs;
             };
+
             services.vscode-server.enable = true;
-            system.stateVersion = "24.05";
+
+            system = {
+              stateVersion = "24.05";
+              autoUpgrade = {
+                enable = true;
+                allowReboot = false;
+                dates = "daily";
+                flake = "github:YourGitHubUsername/your-nixos-config";
+                flags = [
+                  "--update-input"
+                  "nixpkgs"
+                  "-L"  # print build logs
+                ];
+              };
+            };
+          
             wsl = {
               enable = true;
               defaultUser = "nixos";
-              extraBin = with nixpkgs; [
+              extraBin = with pkgs; [
                 {src = "${uutils-coreutils-noprefix}/bin/cat";}
                 {src = "${uutils-coreutils-noprefix}/bin/whoami";}
                 {src = "${busybox}/bin/addgroup";}
                 {src = "${su}/bin/groupadd";}
               ];
             };
-          }
+          })
         ];
       };
     };
