@@ -10,9 +10,13 @@
       nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          
           nixos-wsl.nixosModules.default
+
           vscode-server.nixosModules.default
+          
           ({ pkgs, ... }: {
+
             environment.systemPackages = with pkgs; [
                 bun
                 curl
