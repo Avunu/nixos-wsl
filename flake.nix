@@ -13,7 +13,7 @@
           nixos-wsl.nixosModules.default
           vscode-server.nixosModules.default
           {
-            environment.systemPackages = with pkgs; [
+            environment.systemPackages = with nixpkgs; [
                 bun
                 curl
                 git
@@ -25,16 +25,17 @@
                 wget
                 yarn
             ];
+            nix.settings.experimental-features = [ "nix-command" "flakes" ];
             programs.nix-ld = {
                 enable = true;
-                package = pkgs.nix-ld-rs;
+                package = nixpkgs.nix-ld-rs;
             };
             services.vscode-server.enable = true;
             system.stateVersion = "24.05";
             wsl = {
               enable = true;
               defaultUser = "nixos";
-              extraBin = with pkgs; [
+              extraBin = with nixpkgs; [
                 {src = "${uutils-coreutils-noprefix}/bin/cat";}
                 {src = "${uutils-coreutils-noprefix}/bin/whoami";}
                 {src = "${busybox}/bin/addgroup";}
