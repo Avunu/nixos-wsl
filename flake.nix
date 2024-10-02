@@ -33,6 +33,7 @@
                   git
                   nano
                   nixfmt-rfc-style
+                  nixpkgs-fmt
                   nodejs_22
                   nodePackages.wrangler
                   pnpm
