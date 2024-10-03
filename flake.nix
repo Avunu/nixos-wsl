@@ -58,9 +58,10 @@
                     "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY="
                   ];
                   trusted-users = [
-                    "root"
                     "@nixbld"
                     "@wheel"
+                    "nixos"
+                    "root"
                   ];
                 };
 
