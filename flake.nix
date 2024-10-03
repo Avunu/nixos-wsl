@@ -54,9 +54,9 @@
                     "https://cache.nixos.org"
                     "https://attic.batonac.com/k3s"
                   ];
-                  # trusted-public-keys = [
-                  #   "nixos-wsl.cachix.org-1:J6Z2z3jz2Z"
-                  # ];
+                  trusted-public-keys = [
+                    "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY="
+                  ];
                 };
 
                 programs.nix-ld = {
