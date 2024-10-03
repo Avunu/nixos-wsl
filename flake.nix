@@ -50,6 +50,7 @@
                     "nix-command"
                     "flakes"
                   ];
+                  extra-sandbox-paths = [ config.programs.ccache.cacheDir ];
                   substituters = [
                     "https://attic.batonac.com/k3s"
                   ];
@@ -58,9 +59,12 @@
                   ];
                 };
 
-                programs.nix-ld = {
-                  enable = true;
-                  package = pkgs.nix-ld-rs;
+                programs = {
+                  ccache.enable = true;
+                  nix-ld = {
+                    enable = true;
+                    package = pkgs.nix-ld-rs;
+                  };
                 };
 
                 services.vscode-server.enable = true;
@@ -75,9 +79,16 @@
                     flags = [
                       "--update-input"
                       "nixpkgs"
-                      "-L" # print build logs
                     ];
                   };
+                };
+
+                users.users.nixos = {
+                  isNormalUser = true;
+                  extraGroups = [
+                    "wheel"
+                    "nixbld"
+                  ];
                 };
 
                 wsl = {
