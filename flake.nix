@@ -1,5 +1,6 @@
 {
   inputs = {
+    attic.url = "github:zhaofengli/attic";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
@@ -8,6 +9,7 @@
   outputs =
     {
       self,
+      attic,
       nixpkgs,
       nixos-wsl,
       vscode-server,
@@ -39,6 +41,7 @@
                   pnpm
                   wget
                   yarn
+                  attic.packages.${pkgs.system}.attic
                 ];
 
                 nix.settings.experimental-features = [
