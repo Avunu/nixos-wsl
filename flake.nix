@@ -45,10 +45,19 @@
                   attic.packages.${pkgs.system}.attic
                 ];
 
-                nix.settings.experimental-features = [
-                  "nix-command"
-                  "flakes"
-                ];
+                nix.settings = {
+                  experimental-features = [
+                    "nix-command"
+                    "flakes"
+                  ];
+                  substituters = [
+                    "https://cache.nixos.org"
+                    "https://attic.batonac.com/k3s"
+                  ];
+                  # trusted-public-keys = [
+                  #   "nixos-wsl.cachix.org-1:J6Z2z3jz2Z"
+                  # ];
+                };
 
                 programs.nix-ld = {
                   enable = true;
