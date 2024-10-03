@@ -35,6 +35,7 @@
                   git
                   nano
                   nixfmt-rfc-style
+                  nixos-container
                   nixpkgs-fmt
                   nodejs_22
                   nodePackages.wrangler
