@@ -50,7 +50,7 @@
                     "nix-command"
                     "flakes"
                   ];
-                  extra-sandbox-paths = [ config.programs.ccache.cacheDir ];
+                  extra-sandbox-paths = [ "/var/cache/ccache" ];
                   substituters = [
                     "https://attic.batonac.com/k3s"
                   ];
@@ -60,7 +60,10 @@
                 };
 
                 programs = {
-                  ccache.enable = true;
+                  ccache = {
+                    cacheDir = "/var/cache/ccache";
+                    enable = true;
+                  };
                   nix-ld = {
                     enable = true;
                     package = pkgs.nix-ld-rs;
