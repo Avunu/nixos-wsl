@@ -75,6 +75,7 @@
                     enable = true;
                     libraries = with pkgs; [
                       alsa-lib
+                      ccache
                       glib
                       json-glib
                       libxkbcommon
