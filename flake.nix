@@ -68,6 +68,7 @@
                     enable = true;
                     package = pkgs.nix-ld-rs;
                   };
+                  virt-manager.enable = true;
                 };
 
                 services.vscode-server.enable = true;
@@ -89,10 +90,13 @@
                 users.users.nixos = {
                   isNormalUser = true;
                   extraGroups = [
-                    "wheel"
+                    "libvirtd"
                     "nixbld"
+                    "wheel"
                   ];
                 };
+
+                virtualisation.libvirtd.enable = true;
 
                 wsl = {
                   enable = true;
