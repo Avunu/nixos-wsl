@@ -33,13 +33,18 @@
                   bun
                   curl
                   git
+                  guestfs-tools
+                  libguestfs-with-appliance
                   nano
                   nixfmt-rfc-style
                   nixos-container
                   nixpkgs-fmt
                   nodejs_22
                   nodePackages.wrangler
+                  OVMF
                   pnpm
+                  qemu
+                  virt-manager
                   wget
                   yarn
                   zed-editor
