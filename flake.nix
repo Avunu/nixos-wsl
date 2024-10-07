@@ -45,6 +45,7 @@
                   OVMF
                   pnpm
                   qemu
+                  sparse
                   virt-manager
                   wget
                   yarn
