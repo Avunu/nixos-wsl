@@ -31,6 +31,7 @@
 
                 environment.systemPackages = with pkgs; [
                   bun
+                  ccache
                   curl
                   git
                   guestfs-tools
@@ -75,7 +76,6 @@
                     enable = true;
                     libraries = with pkgs; [
                       alsa-lib
-                      ccache
                       glib
                       json-glib
                       libxkbcommon
