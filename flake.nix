@@ -107,13 +107,16 @@
                   };
                 };
 
-                users.users.nixos = {
-                  isNormalUser = true;
-                  extraGroups = [
-                    "libvirtd"
-                    "nixbld"
-                    "wheel"
-                  ];
+                users = {
+                  defaultUserShell = pkgs.bashInteractive;
+                  users.nixos = {
+                    isNormalUser = true;
+                    extraGroups = [
+                      "libvirtd"
+                      "nixbld"
+                      "wheel"
+                    ];
+                  };
                 };
 
                 virtualisation.libvirtd.enable = true;
