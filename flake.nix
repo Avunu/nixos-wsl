@@ -72,6 +72,21 @@
                     enable = true;
                   };
                   direnv.enable = true;
+                  nix-ld = {
+                    enable = true;
+                    libraries = with pkgs; [
+                      alsa-lib
+                      glib
+                      json-glib
+                      libxkbcommon
+                      openssl
+                      vulkan-loader
+                      vulkan-validation-layers
+                      wayland
+                      zstd
+                    ];
+                    package = pkgs.nix-ld-rs;
+                  };
                   virt-manager.enable = true;
                 };
 
