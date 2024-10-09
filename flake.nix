@@ -34,7 +34,7 @@
                   ccache
                   curl
                   git
-                  guestfs-tools
+                  # guestfs-tools
                   libguestfs-with-appliance
                   nano
                   nixfmt-rfc-style
@@ -73,21 +73,21 @@
                     enable = true;
                   };
                   direnv.enable = true;
-                  nix-ld = {
-                    enable = true;
-                    libraries = with pkgs; [
-                      alsa-lib
-                      glib
-                      json-glib
-                      libxkbcommon
-                      openssl
-                      vulkan-loader
-                      vulkan-validation-layers
-                      wayland
-                      zstd
-                    ];
-                    package = pkgs.nix-ld-rs;
-                  };
+                  # nix-ld = {
+                  #   enable = true;
+                  #   libraries = with pkgs; [
+                  #     alsa-lib
+                  #     glib
+                  #     json-glib
+                  #     libxkbcommon
+                  #     openssl
+                  #     vulkan-loader
+                  #     vulkan-validation-layers
+                  #     wayland
+                  #     zstd
+                  #   ];
+                  #   package = pkgs.nix-ld-rs;
+                  # };
                   virt-manager.enable = true;
                 };
 
@@ -116,6 +116,7 @@
                       "nixbld"
                       "wheel"
                     ];
+                    shell = pkgs.bashInteractive;
                   };
                 };
 
