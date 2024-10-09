@@ -35,21 +35,21 @@
                   curl
                   git
                   # guestfs-tools
-                  libguestfs-with-appliance
+                  # libguestfs-with-appliance
                   nano
                   nixfmt-rfc-style
                   nixos-container
                   nixpkgs-fmt
                   nodejs_22
                   nodePackages.wrangler
-                  OVMF
+                  # OVMF
                   pnpm
-                  qemu
-                  sparse
-                  virt-manager
+                  # qemu
+                  # sparse
+                  # virt-manager
                   wget
                   yarn
-                  zed-editor
+                  # zed-editor
                   attic.packages.${pkgs.system}.attic
                 ];
 
@@ -94,7 +94,7 @@
                 services.vscode-server.enable = true;
 
                 system = {
-                  stateVersion = "24.05";
+                  stateVersion = "24.11";
                   autoUpgrade = {
                     enable = true;
                     allowReboot = false;
@@ -108,11 +108,10 @@
                 };
 
                 users = {
-                  defaultUserShell = pkgs.bashInteractive;
                   users.nixos = {
                     isNormalUser = true;
                     extraGroups = [
-                      "libvirtd"
+                      # "libvirtd"
                       "nixbld"
                       "wheel"
                     ];
@@ -120,7 +119,7 @@
                   };
                 };
 
-                virtualisation.libvirtd.enable = true;
+                # virtualisation.libvirtd.enable = true;
 
                 wsl = {
                   enable = true;
