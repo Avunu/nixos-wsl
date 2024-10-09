@@ -40,22 +40,15 @@
                   ccache
                   curl
                   git
-                  # guestfs-tools
-                  # libguestfs-with-appliance
                   nano
                   nixfmt-rfc-style
                   nixos-container
                   nixpkgs-fmt
                   nodejs_22
                   nodePackages.wrangler
-                  # OVMF
                   pnpm
-                  # qemu
-                  # sparse
-                  # virt-manager
                   wget
                   yarn
-                  # zed-editor
                   attic.packages.${pkgs.system}.attic
                 ];
 
@@ -79,21 +72,6 @@
                     enable = true;
                   };
                   direnv.enable = true;
-                  # nix-ld = {
-                  #   enable = true;
-                  #   libraries = with pkgs; [
-                  #     alsa-lib
-                  #     glib
-                  #     json-glib
-                  #     libxkbcommon
-                  #     openssl
-                  #     vulkan-loader
-                  #     vulkan-validation-layers
-                  #     wayland
-                  #     zstd
-                  #   ];
-                  #   package = pkgs.nix-ld-rs;
-                  # };
                   virt-manager.enable = true;
                 };
 
@@ -117,7 +95,7 @@
                   users.nixos = {
                     isNormalUser = true;
                     extraGroups = [
-                      # "libvirtd"
+                      "libvirtd"
                       "nixbld"
                       "wheel"
                     ];
@@ -125,7 +103,18 @@
                   };
                 };
 
-                # virtualisation.libvirtd.enable = true;
+                virtualisation = {
+                  libvirtd = {
+                    enable = true;
+                    qemu.ovmf.enable = true;
+                    nss.enableGuest = true;
+                  };
+                  # podman = {
+                  #   enable = true;
+                  #   dockerSocket.enable = true;
+                  #   dockerCompat = true;
+                  # };
+                };
 
                 wsl = {
                   enable = true;
