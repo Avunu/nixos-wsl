@@ -114,6 +114,7 @@
                     flags = [
                       "--update-input"
                       "nixpkgs"
+                      "--refresh"
                     ];
                   };
                 };
