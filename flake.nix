@@ -32,7 +32,18 @@
             vscode-server.nixosModules.default
 
             (
-              { pkgs, ... }:
+              { pkgs, lib, ... }:
+              let
+                pythonPackages = pkgs.python3.withPackages (
+                  python-pkgs: with python-pkgs; [
+                    black
+                    flake8
+                    isort
+                    pandas
+                    requests
+                  ]
+                );
+              in
               {
 
                 environment.systemPackages = with pkgs; [
@@ -47,6 +58,7 @@
                   nodejs_22
                   nodePackages.wrangler
                   pnpm
+                  pythonPackages
                   wget
                   yarn
                   attic.packages.${pkgs.system}.attic
