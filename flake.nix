@@ -59,6 +59,7 @@
                   nodePackages.wrangler
                   pnpm
                   pythonPackages
+                  tzdata
                   wget
                   yarn
                   attic.packages.${pkgs.system}.attic
@@ -138,6 +139,8 @@
                     qemu.ovmf.enable = true;
                     nss.enableGuest = true;
                   };
+                  mountHostNixStore = false;
+                  useNixStoreImage = false;
                 };
 
                 wsl = {
