@@ -123,6 +123,7 @@
                   users.nixos = {
                     isNormalUser = true;
                     extraGroups = [
+                      "docker"
                       "libvirtd"
                       "nixbld"
                       "wheel"
@@ -137,23 +138,15 @@
                     qemu.ovmf.enable = true;
                     nss.enableGuest = true;
                   };
-                  # podman = {
-                  #   enable = true;
-                  #   dockerSocket.enable = true;
-                  #   dockerCompat = true;
-                  # };
                 };
 
                 wsl = {
                   enable = true;
                   defaultUser = "nixos";
-                  extraBin = with pkgs; [
-                    { src = "${uutils-coreutils-noprefix}/bin/cat"; }
-                    { src = "${uutils-coreutils-noprefix}/bin/whoami"; }
-                    { src = "${busybox}/bin/addgroup"; }
-                    { src = "${su}/bin/groupadd"; }
-                  ];
+                  docker-desktop.enable = true;
                   nativeSystemd = true;
+                  startMenuLaunchers = true;
+                  useWindowsDriver = true;
                 };
               }
             )
