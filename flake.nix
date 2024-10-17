@@ -139,8 +139,6 @@
                     qemu.ovmf.enable = true;
                     nss.enableGuest = true;
                   };
-                  mountHostNixStore = false;
-                  useNixStoreImage = false;
                 };
 
                 wsl = {
