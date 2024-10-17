@@ -120,6 +120,13 @@
                   };
                 };
 
+                systemd.sleep.extraConfig = ''
+                  AllowHibernation=no
+                  AllowHybridSleep=no
+                  AllowSuspend=no
+                  AllowSuspendThenHibernate=no
+                '';
+
                 users = {
                   users.nixos = {
                     isNormalUser = true;
