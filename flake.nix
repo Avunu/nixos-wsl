@@ -153,6 +153,7 @@
                     { src = "${busybox}/bin/addgroup"; }
                     { src = "${su}/bin/groupadd"; }
                   ];
+                  nativeSystemd = true;
                 };
               }
             )
