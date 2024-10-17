@@ -140,13 +140,13 @@
                   };
                 };
 
-                virtualisation = {
-                  libvirtd = {
-                    enable = true;
-                    qemu.ovmf.enable = true;
-                    nss.enableGuest = true;
-                  };
-                };
+                # virtualisation = {
+                #   libvirtd = {
+                #     enable = true;
+                #     qemu.ovmf.enable = true;
+                #     nss.enableGuest = true;
+                #   };
+                # };
 
                 wsl = {
                   enable = true;
