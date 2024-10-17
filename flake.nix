@@ -144,7 +144,7 @@
                   enable = true;
                   defaultUser = "nixos";
                   docker-desktop.enable = true;
-                  nativeSystemd = true;
+                  nativeSystemd = false;
                   startMenuLaunchers = true;
                   useWindowsDriver = true;
                 };
