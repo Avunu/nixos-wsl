@@ -46,24 +46,44 @@
               in
               {
 
-                environment.systemPackages = with pkgs; [
-                  bun
-                  ccache
-                  curl
-                  git
-                  nano
-                  nixfmt-rfc-style
-                  nixos-container
-                  nixpkgs-fmt
-                  nodejs_22
-                  nodePackages.wrangler
-                  pnpm
-                  pythonPackages
-                  tzdata
-                  wget
-                  yarn
-                  attic.packages.${pkgs.system}.attic
-                ];
+                environment = {
+                  sessionVariables = {
+                    LD_LIBRARY_PATH = [
+                      "/usr/lib/wsl/lib"
+                      "${pkgs.ncurses5}/lib"
+                      "/run/opengl-driver/lib"
+                    ];
+                  };
+                  systemPackages = with pkgs; [
+                    bun
+                    ccache
+                    curl
+                    git
+                    nano
+                    nixfmt-rfc-style
+                    nixos-container
+                    nixpkgs-fmt
+                    nodejs_22
+                    nodePackages.wrangler
+                    pnpm
+                    pythonPackages
+                    tzdata
+                    wget
+                    yarn
+                    attic.packages.${pkgs.system}.attic
+                  ];
+                };
+
+                hardware.opengl = {
+                  enable = true;
+                  driSupport = true;
+
+                  extraPackages = with pkgs; [
+                    mesa.drivers
+                    libvdpau-va-gl
+                    vaapiVdpau
+                  ];
+                };
 
                 nix.settings = {
                   experimental-features = [
