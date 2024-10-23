@@ -70,6 +70,7 @@
                     tzdata
                     wget
                     yarn
+                    zed-editor
                     attic.packages.${pkgs.system}.attic
                   ];
                 };
