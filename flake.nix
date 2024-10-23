@@ -53,6 +53,8 @@
                       "${pkgs.ncurses5}/lib"
                       "/run/opengl-driver/lib"
                     ];
+                    WAYLAND_DISPLAY = "wayland-0";
+                    XDG_SESSION_TYPE = "wayland";
                   };
                   systemPackages = with pkgs; [
                     bun
