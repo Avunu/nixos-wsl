@@ -22,6 +22,39 @@
       ...
     }:
     {
+      lib = {
+        # Returns true if the system is running under WSL
+        isWSL =
+          { config, lib, ... }:
+          let
+            # Check for WSL-specific files and environment
+            wslCheckPaths = [
+              "/proc/sys/fs/binfmt_misc/WSLInterop"
+              "/run/WSL"
+            ];
+
+            # Read kernel version to check for Microsoft string
+            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
+
+            # Check if any WSL indicators are present
+            hasWSLPaths = builtins.any (p: builtins.pathExists p) wslCheckPaths;
+            hasMicrosoftKernel = lib.strings.hasInfix "microsoft" (lib.strings.toLower kernelRelease);
+
+          in
+          hasWSLPaths || hasMicrosoftKernel;
+
+        # Returns true if the system is running under HyperV
+        isHyperV =
+          { config, lib, ... }:
+          let
+            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
+            dmesg = builtins.readFile "/var/log/dmesg";
+            hasHyperVKernel = lib.strings.hasInfix "hyper-v" (lib.strings.toLower kernelRelease);
+            hasHyperVDmesg = lib.strings.hasInfix "Hyper-V" dmesg;
+          in
+          hasHyperVKernel || hasHyperVDmesg;
+      };
+
       nixosConfigurations = {
         nixos = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -47,15 +80,6 @@
               {
 
                 environment = {
-                  sessionVariables = {
-                    LD_LIBRARY_PATH = [
-                      "/usr/lib/wsl/lib"
-                      "${pkgs.ncurses5}/lib"
-                      "/run/opengl-driver/lib"
-                    ];
-                    WAYLAND_DISPLAY = "wayland-0";
-                    XDG_SESSION_TYPE = "wayland";
-                  };
                   systemPackages = with pkgs; [
                     bun
                     ccache
@@ -112,22 +136,6 @@
                     enable = true;
                   };
                   direnv.enable = true;
-                  nix-ld = {
-                    enable = true;
-                    libraries = with pkgs; [
-                      alsa-lib
-                      glib
-                      json-glib
-                      libxkbcommon
-                      openssl
-                      vulkan-loader
-                      vulkan-validation-layers
-                      wayland
-                      zstd
-                    ];
-                    package = pkgs.nix-ld-rs;
-                  };
-                  virt-manager.enable = true;
                 };
 
                 services.vscode-server.enable = true;
@@ -147,13 +155,6 @@
                   };
                 };
 
-                systemd.sleep.extraConfig = ''
-                  AllowHibernation=no
-                  AllowHybridSleep=no
-                  AllowSuspend=no
-                  AllowSuspendThenHibernate=no
-                '';
-
                 users = {
                   users.nixos = {
                     isNormalUser = true;
@@ -167,21 +168,31 @@
                   };
                 };
 
-                # virtualisation = {
-                #   libvirtd = {
-                #     enable = true;
-                #     qemu.ovmf.enable = true;
-                #     nss.enableGuest = true;
-                #   };
-                # };
-
-                wsl = {
+                # WSL-specific configuration
+                wsl = lib.mkIf (self.lib.isWSL config) {
                   enable = true;
                   defaultUser = "nixos";
                   docker-desktop.enable = true;
                   nativeSystemd = true;
                   startMenuLaunchers = true;
                   useWindowsDriver = true;
+                };
+
+                # HyperV-specific configuration
+                virtualisation = lib.mkIf (self.lib.isHyperV config) {
+                  hypervGuest = {
+                    enable = true;
+                    videoMode = "1920x1080"; # Adjust as needed
+                  };
+                };
+
+                # Optional: HyperV-specific networking
+                networking = lib.mkIf (self.lib.isHyperV config) {
+                  useDHCP = true; # Or configure static IP if needed
+                  # Enable specific network interfaces if needed
+                  interfaces = {
+                    eth0.useDHCP = true;
+                  };
                 };
               }
             )
