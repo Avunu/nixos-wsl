@@ -23,18 +23,7 @@
     }:
     {
       lib = {
-        getVirt =
-          { config, lib, ... }:
-          let
-            # Read kernel release info
-            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
-            isWSL =
-              lib.strings.hasInfix "microsoft" (lib.strings.toLower kernelRelease)
-              || lib.strings.hasInfix "WSL" kernelRelease;
-          in
-          if isWSL then "wsl" else "none";
-
-        isWSL = { config, lib, ... }: (self.lib.getVirt { inherit config lib; }) == "wsl";
+        isWSL = builtins.pathExists /usr/lib/wsl/lib;
       };
 
       nixosConfigurations = {
@@ -67,6 +56,15 @@
               {
                 # HyperV-specific configuration
                 boot = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                  extraModulePackages = [ ];
+                  initrd = {
+                    availableKernelModules = [
+                      "sd_mod"
+                      "sr_mod"
+                    ];
+                    kernelModules = [ ];
+                  };
+                  kernelModules = [ ];
                   kernelPackages = pkgs.linuxPackages_latest;
                   loader = {
                     systemd-boot.enable = true;
