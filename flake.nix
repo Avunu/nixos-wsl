@@ -65,7 +65,7 @@
             vscode-server.nixosModules.default
 
             (
-              { pkgs, lib, ... }:
+              { config, pkgs, lib, ... }:
               let
                 pythonPackages = pkgs.python3.withPackages (
                   python-pkgs: with python-pkgs; [
