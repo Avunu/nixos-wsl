@@ -169,7 +169,7 @@
                 };
 
                 # WSL-specific configuration
-                wsl = lib.mkIf (self.lib.isWSL config) {
+                wsl = lib.mkIf (self.lib.isWSL { inherit config lib; }) {
                   enable = true;
                   defaultUser = "nixos";
                   docker-desktop.enable = true;
@@ -179,15 +179,15 @@
                 };
 
                 # HyperV-specific configuration
-                virtualisation = lib.mkIf (self.lib.isHyperV config) {
+                virtualisation = lib.mkIf (self.lib.isHyperV { inherit config lib; }) {
                   hypervGuest = {
                     enable = true;
-                    videoMode = "1920x1080"; # Adjust as needed
+                    videoMode = "1920x1080";
                   };
                 };
 
                 # Optional: HyperV-specific networking
-                networking = lib.mkIf (self.lib.isHyperV config) {
+                networking = lib.mkIf (self.lib.isHyperV { inherit config lib; }) {
                   useDHCP = true; # Or configure static IP if needed
                   # Enable specific network interfaces if needed
                   interfaces = {
