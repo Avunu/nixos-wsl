@@ -190,6 +190,11 @@
             nix-ld.enable = true;
           };
 
+          security.sudo = {
+            enable = true;
+            wheelNeedsPassword = false;
+          };
+
           services = {
             openssh.enable = true;
             vscode-server.enable = true;
@@ -236,12 +241,24 @@
             nixos-wsl.nixosModules.default
             vscode-server.nixosModules.default
             commonModule
-            ({ config, pkgs, lib, ... }: {
-              config = lib.mkMerge [
-                (lib.mkIf isWSL (wslModule { inherit config pkgs lib; }))
-                (lib.mkIf (!isWSL) (hypervModule { inherit config pkgs lib; }))
-              ];
-            })
+            (
+              {
+                config,
+                pkgs,
+                lib,
+                ...
+              }:
+              {
+                config = lib.mkMerge [
+                  (lib.mkIf isWSL (wslModule {
+                    inherit config pkgs lib;
+                  }))
+                  (lib.mkIf (!isWSL) (hypervModule {
+                    inherit config pkgs lib;
+                  }))
+                ];
+              }
+            )
           ];
         };
       };
