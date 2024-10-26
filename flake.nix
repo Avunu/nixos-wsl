@@ -99,7 +99,7 @@
               dockerCompat = true;
               dockerSocket.enable = true;
               enable = true;
-              networkSocket.enable = true;
+              # networkSocket.enable = true;
             };
           };
 
