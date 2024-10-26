@@ -21,10 +21,10 @@
       vscode-server,
       ...
     }:
+    let
+      isWSL = builtins.pathExists /usr/lib/wsl/lib;
+    in
     {
-      lib = {
-        isWSL = builtins.pathExists /usr/lib/wsl/lib;
-      };
 
       nixosConfigurations = {
         nixos = nixpkgs.lib.nixosSystem {
@@ -55,7 +55,7 @@
               in
               {
                 # HyperV-specific configuration
-                boot = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                boot = lib.mkIf (!isWSL) {
                   extraModulePackages = [ ];
                   initrd = {
                     availableKernelModules = [
@@ -95,7 +95,7 @@
                 };
 
                 # HyperV-specific configuration
-                fileSystems = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                fileSystems = lib.mkIf (!isWSL) {
                   "/" = {
                     device = "/dev/disk/by-partlabel/root";
                     fsType = "btrfs";
@@ -183,7 +183,7 @@
                 };
 
                 # WSL-specific configuration
-                wsl = lib.mkIf (self.lib.isWSL { inherit config lib; }) {
+                wsl = lib.mkIf (isWSL) {
                   enable = true;
                   defaultUser = "nixos";
                   docker-desktop.enable = true;
@@ -193,7 +193,7 @@
                 };
 
                 # HyperV-specific configuration
-                virtualisation = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                virtualisation = lib.mkIf (!isWSL) {
                   hypervGuest = {
                     enable = true;
                     videoMode = "1920x1080";
@@ -201,7 +201,7 @@
                 };
 
                 # Optional: HyperV-specific networking
-                networking = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                networking = lib.mkIf (!isWSL) {
                   useDHCP = true; # Or configure static IP if needed
                   # Enable specific network interfaces if needed
                   interfaces = {
