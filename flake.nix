@@ -65,6 +65,13 @@
                 );
               in
               {
+                # HyperV-specific configuration
+                boot = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                  loader = {
+                    systemd-boot.enable = true;
+                    efi.canTouchEfiVariables = true;
+                  };
+                };
 
                 environment = {
                   systemPackages = with pkgs; [
@@ -86,6 +93,24 @@
                     zed-editor
                     attic.packages.${pkgs.system}.attic
                   ];
+                };
+
+                # HyperV-specific configuration
+                fileSystems = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                  "/" = {
+                    device = "/dev/disk/by-partlabel/root";
+                    fsType = "btrfs";
+                    options = [ "subvol=@" ];
+                  };
+
+                  "/boot" = {
+                    device = "/dev/disk/by-partlabel/EFI";
+                    fsType = "vfat";
+                    options = [
+                      "fmask=0077"
+                      "dmask=0077"
+                    ];
+                  };
                 };
 
                 hardware.graphics = {
@@ -125,7 +150,10 @@
                   direnv.enable = true;
                 };
 
-                services.vscode-server.enable = true;
+                services = {
+                  openssh.enable = true;
+                  vscode-server.enable = true;
+                };
 
                 system = {
                   stateVersion = "24.11";
