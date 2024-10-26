@@ -40,7 +40,7 @@
               || lib.strings.hasInfix "WSL" kernelRelease;
 
             # Check Hyper-V indicators
-            dmiFile = "/sys/class/dmi/id/bios_version";
+            dmiFile = "/sys/devices/virtual/dmi/id/bios_version";
             dmiContent = if builtins.pathExists dmiFile then builtins.readFile dmiFile else "";
             isHyperV = lib.strings.hasInfix "Hyper-V" dmiContent;
 
