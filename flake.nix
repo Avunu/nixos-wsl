@@ -67,6 +67,7 @@
               {
                 # HyperV-specific configuration
                 boot = lib.mkIf (!self.lib.isWSL { inherit config lib; }) {
+                  kernelPackages = pkgs.linuxPackages_latest;
                   loader = {
                     systemd-boot.enable = true;
                     efi.canTouchEfiVariables = true;
