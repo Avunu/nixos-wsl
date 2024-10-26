@@ -187,6 +187,7 @@
               enable = true;
             };
             direnv.enable = true;
+            nix-ld.enable = true;
           };
 
           services = {
