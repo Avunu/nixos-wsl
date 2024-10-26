@@ -40,20 +40,8 @@
               || lib.strings.hasInfix "WSL" kernelRelease;
 
             # Check Hyper-V indicators
-            hyperVPaths = [
-              "/sys/class/dmi/id/product_name"
-              "/sys/class/dmi/id/sys_vendor"
-              "/sys/class/dmi/id/board_vendor"
-              "/sys/class/dmi/id/bios_vendor"
-            ];
-
-            dmiContent =
-              let
-                readDmiFile = file: if builtins.pathExists file then builtins.readFile file else "";
-                dmiFiles = builtins.map readDmiFile hyperVPaths;
-              in
-              builtins.concatStringsSep " " dmiFiles;
-
+            dmiFile = "/sys/class/dmi/id/bios_version";
+            dmiContent = if builtins.pathExists dmiFile then builtins.readFile dmiFile else "";
             isHyperV = lib.strings.hasInfix "Hyper-V" dmiContent;
 
           in
