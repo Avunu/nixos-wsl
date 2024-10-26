@@ -236,10 +236,10 @@
             nixos-wsl.nixosModules.default
             vscode-server.nixosModules.default
             commonModule
-            ({ lib, ... }: {
+            ({ config, pkgs, lib, ... }: {
               config = lib.mkMerge [
-                (lib.mkIf isWSL (wslModule { inherit lib; }))
-                (lib.mkIf (!isWSL) (hypervModule { inherit lib; }))
+                (lib.mkIf isWSL (wslModule { inherit config pkgs lib; }))
+                (lib.mkIf (!isWSL) (hypervModule { inherit config pkgs lib; }))
               ];
             })
           ];
