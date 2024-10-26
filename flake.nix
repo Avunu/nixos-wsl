@@ -23,36 +23,50 @@
     }:
     {
       lib = {
-        # Returns true if the system is running under WSL
-        isWSL =
+        getVirt =
           { config, lib, ... }:
           let
-            # Check for WSL-specific files and environment
-            wslCheckPaths = [
+            # Read kernel release info
+            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
+
+            # Check WSL indicators
+            wslPaths = [
               "/proc/sys/fs/binfmt_misc/WSLInterop"
               "/run/WSL"
             ];
+            hasWSLPaths = builtins.any (p: builtins.pathExists p) wslPaths;
+            isWSLKernel =
+              lib.strings.hasInfix "microsoft" (lib.strings.toLower kernelRelease)
+              || lib.strings.hasInfix "WSL" kernelRelease;
 
-            # Read kernel version to check for Microsoft string
-            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
+            # Check Hyper-V indicators
+            hyperVPaths = [
+              "/sys/class/dmi/id/product_name"
+              "/sys/class/dmi/id/sys_vendor"
+              "/sys/class/dmi/id/board_vendor"
+              "/sys/class/dmi/id/bios_vendor"
+            ];
 
-            # Check if any WSL indicators are present
-            hasWSLPaths = builtins.any (p: builtins.pathExists p) wslCheckPaths;
-            hasMicrosoftKernel = lib.strings.hasInfix "microsoft" (lib.strings.toLower kernelRelease);
+            dmiContent =
+              let
+                readDmiFile = file: if builtins.pathExists file then builtins.readFile file else "";
+                dmiFiles = builtins.map readDmiFile hyperVPaths;
+              in
+              builtins.concatStringsSep " " dmiFiles;
+
+            isHyperV = lib.strings.hasInfix "Hyper-V" dmiContent;
 
           in
-          hasWSLPaths || hasMicrosoftKernel;
+          if hasWSLPaths || isWSLKernel then
+            "wsl"
+          else if isHyperV then
+            "microsoft"
+          else
+            "none";
 
-        # Returns true if the system is running under HyperV
-        isHyperV =
-          { config, lib, ... }:
-          let
-            kernelRelease = builtins.readFile "/proc/sys/kernel/osrelease";
-            dmesg = builtins.readFile "/var/log/dmesg";
-            hasHyperVKernel = lib.strings.hasInfix "hyper-v" (lib.strings.toLower kernelRelease);
-            hasHyperVDmesg = lib.strings.hasInfix "Hyper-V" dmesg;
-          in
-          hasHyperVKernel || hasHyperVDmesg;
+        isWSL = { config, lib, ... }: (self.lib.getVirt { inherit config lib; }) == "wsl";
+
+        isHyperV = { config, lib, ... }: (self.lib.getVirt { inherit config lib; }) == "microsoft";
       };
 
       nixosConfigurations = {
@@ -65,7 +79,12 @@
             vscode-server.nixosModules.default
 
             (
-              { config, pkgs, lib, ... }:
+              {
+                config,
+                pkgs,
+                lib,
+                ...
+              }:
               let
                 pythonPackages = pkgs.python3.withPackages (
                   python-pkgs: with python-pkgs; [
