@@ -177,8 +177,10 @@
             extra-sandbox-paths = [ "/var/cache/ccache" ];
             substituters = [
               "https://attic.batonac.com/k3s"
+              "https://cache.nixos.org/"
             ];
             trusted-public-keys = [
+              "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
               "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY="
             ];
             trusted-users = [
