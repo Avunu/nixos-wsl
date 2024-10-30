@@ -104,10 +104,12 @@
             oci-containers.backend = "podman";
             podman = {
               autoPrune.enable = true;
+              defaultNetwork.settings = {
+                dns_enabled = true;
+              };
               dockerCompat = true;
               dockerSocket.enable = true;
               enable = true;
-              # networkSocket.enable = true;
             };
           };
 
@@ -177,11 +179,15 @@
             ];
             extra-sandbox-paths = [ "/var/cache/ccache" ];
             substituters = [
-              "https://attic.batonac.com/k3s"
-              "https://cache.nixos.org/"
+              "https://cache.nixos.org?priority=40"
+              "https://nix-community.cachix.org?priority=41"
+              "https://numtide.cachix.org?priority=42"
+              "https://attic.batonac.com/k3s?priority=43"
             ];
             trusted-public-keys = [
               "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+              "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+              "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
               "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY="
             ];
             trusted-users = [
