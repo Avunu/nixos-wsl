@@ -66,6 +66,7 @@
 
           environment = {
             systemPackages = with pkgs; [
+              docker-compose
               podman-compose
               podman-tui
             ];
