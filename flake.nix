@@ -145,8 +145,10 @@
             systemPackages = with pkgs; [
               bun
               ccache
+              cmake
               curl
               git
+              gnumake
               nano
               nixfmt-rfc-style
               nixos-container
