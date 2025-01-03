@@ -216,6 +216,7 @@
           services = {
             openssh.enable = true;
             vscode-server.enable = true;
+            logrotate.checkConfig = false;
           };
 
           system = {
