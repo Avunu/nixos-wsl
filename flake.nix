@@ -142,6 +142,7 @@
         {
           environment = {
             systemPackages = with pkgs; [
+              attic.packages.${pkgs.system}.attic
               bun
               ccache
               cmake
@@ -154,14 +155,13 @@
               nixos-container
               nixpkgs-fmt
               nodejs_22
-              nodePackages.wrangler
               pnpm
               pythonPackages
               tzdata
               wget
+              wrangler
               yarn
               zed-editor
-              attic.packages.${pkgs.system}.attic
             ];
           };
 
