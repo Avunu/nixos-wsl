@@ -159,7 +159,6 @@
               pythonPackages
               tzdata
               wget
-              wrangler
               yarn
               zed-editor
             ];
