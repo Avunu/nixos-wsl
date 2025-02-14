@@ -147,6 +147,7 @@
               ccache
               cmake
               curl
+              gh
               git
               gnumake
               nano
