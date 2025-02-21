@@ -155,11 +155,10 @@
               nixos-container
               nixpkgs-fmt
               nodejs_22
-              pnpm
+              corepack_22
               pythonPackages
               tzdata
               wget
-              yarn
               zed-editor
             ];
           };
