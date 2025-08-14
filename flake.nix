@@ -159,16 +159,13 @@
               pythonPackages
               tzdata
               wget
-              zed-editor
             ];
           };
 
           hardware.graphics = {
             enable = true;
             extraPackages = with pkgs; [
-              mesa.drivers
-              libvdpau-va-gl
-              vaapiVdpau
+              mesa
             ];
           };
 
@@ -238,7 +235,6 @@
               extraGroups = [
                 "docker"
                 "libvirtd"
-                "nixbld"
                 "wheel"
               ];
               isNormalUser = true;
