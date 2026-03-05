@@ -4,6 +4,8 @@ A modular NixOS configuration for [NixOS-WSL](https://github.com/nix-community/N
 
 ## Quick Start
 
+First, install a [NixOS-WSL instance with the default configuration](https://nix-community.github.io/NixOS-WSL/install.html).
+
 Bootstrap a new WSL instance by pulling the local config into place and rebuilding:
 
 ```bash
