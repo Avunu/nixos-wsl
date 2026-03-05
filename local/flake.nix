@@ -23,7 +23,7 @@
             {
               wslHost = {
                 defaultUser = "nixos";
-                stateVersion = "24.11";
+                stateVersion = "25.11";
                 sshKeys = [
                   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOv4SpIhHJqtRaYBRQOin4PTDUxRwo7ozoQHTUFjMGLW avunu@AvunuCentral"
                 ];
