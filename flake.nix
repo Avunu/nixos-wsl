@@ -1,4 +1,6 @@
 {
+  description = "NixOS WSL Configuration";
+
   inputs = {
     attic.url = "github:zhaofengli/attic";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -13,7 +15,7 @@
   };
 
   outputs =
-    {
+    inputs@{
       self,
       attic,
       nixpkgs,
@@ -22,258 +24,195 @@
       ...
     }:
     let
-      isWSL = builtins.pathExists /usr/lib/wsl/lib;
-
-      # WSL-specific module
-      wslModule =
-        { config, lib, ... }:
-        {
-          wsl = {
-            enable = true;
-            defaultUser = "nixos";
-            docker-desktop.enable = true;
-            startMenuLaunchers = true;
-            useWindowsDriver = true;
-          };
-        };
-
-      # HyperV-specific module
-      hypervModule =
+      lib = nixpkgs.lib;
+    in
+    {
+      nixosModules.wsl =
         {
           config,
-          pkgs,
           lib,
+          pkgs,
           ...
         }:
-        {
-          boot = {
-            extraModulePackages = [ ];
-            initrd = {
-              availableKernelModules = [
-                "sd_mod"
-                "sr_mod"
-              ];
-              kernelModules = [ ];
-            };
-            kernelModules = [ ];
-            kernelPackages = pkgs.linuxPackages_latest;
-            loader = {
-              systemd-boot.enable = true;
-              efi.canTouchEfiVariables = true;
-            };
-          };
-
-          environment = {
-            systemPackages = with pkgs; [
-              docker-compose
-              podman-compose
-              podman-tui
-            ];
-          };
-
-          fileSystems = {
-            "/" = {
-              device = "/dev/disk/by-partlabel/root";
-              fsType = "btrfs";
-              options = [ "subvol=@" ];
-            };
-
-            "/boot" = {
-              device = "/dev/disk/by-partlabel/EFI";
-              fsType = "vfat";
-              options = [
-                "fmask=0077"
-                "dmask=0077"
-              ];
-            };
-          };
-
-          virtualisation = {
-            containers.storage.settings = {
-              storage = {
-                driver = "btrfs";
-                graphroot = "/var/lib/containers/storage";
-                runroot = "/run/containers/storage";
-              };
-            };
-            hypervGuest = {
-              enable = true;
-              videoMode = "1920x1080";
-            };
-            oci-containers.backend = "podman";
-            podman = {
-              autoPrune.enable = true;
-              defaultNetwork.settings = {
-                dns_enabled = true;
-              };
-              dockerCompat = true;
-              dockerSocket.enable = true;
-              enable = true;
-            };
-          };
-
-          networking = {
-            useDHCP = true;
-            interfaces = {
-              eth0.useDHCP = true;
-            };
-          };
-        };
-
-      # Common configuration module
-      commonModule =
-        {
-          config,
-          pkgs,
-          lib,
-          ...
-        }:
+        with lib;
         let
-          pythonPackages = pkgs.python3.withPackages (
-            python-pkgs: with python-pkgs; [
-              black
-              flake8
-              isort
-              pandas
-              requests
-            ]
-          );
+          cfg = config.wslHost;
         in
         {
-          environment = {
-            systemPackages = with pkgs; [
-              attic.packages.${pkgs.system}.attic
-              bun
-              ccache
-              cmake
-              curl
-              gh
-              git
-              gnumake
-              nano
-              nixfmt-rfc-style
-              nixos-container
-              nixpkgs-fmt
-              nodejs_22
-              corepack_22
-              pythonPackages
-              tzdata
-              wget
-            ];
-          };
+          imports = [
+            inputs.nixos-wsl.nixosModules.default
+            inputs.vscode-server.nixosModules.default
+          ];
 
-          hardware.graphics = {
-            enable = true;
-            extraPackages = with pkgs; [
-              mesa
-            ];
-          };
-
-          nix.settings = {
-            experimental-features = [
-              "nix-command"
-              "flakes"
-            ];
-            extra-sandbox-paths = [ "/var/cache/ccache" ];
-            substituters = [
-              "https://cache.nixos.org?priority=40"
-              "https://nix-community.cachix.org?priority=41"
-              "https://numtide.cachix.org?priority=42"
-              "https://attic.batonac.com/k3s?priority=43"
-            ];
-            trusted-public-keys = [
-              "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-              "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-              "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-              "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY="
-            ];
-            trusted-users = [
-              "root"
-              "nixos"
-              "@wheel"
-            ];
-          };
-
-          programs = {
-            ccache = {
-              cacheDir = "/var/cache/ccache";
-              enable = true;
+          options.wslHost = {
+            defaultUser = mkOption {
+              type = types.str;
+              default = "nixos";
+              description = "Default WSL user";
             };
-            direnv.enable = true;
-            nix-ld.enable = true;
+            sshKeys = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "SSH public keys for the default user";
+            };
+            stateVersion = mkOption {
+              type = types.str;
+              default = "24.11";
+              description = "NixOS state version";
+            };
+            extraPackages = mkOption {
+              type = types.listOf types.package;
+              default = [ ];
+              description = "Additional packages to install";
+            };
+            vscodeIntegration = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Enable VS Code Server integration";
+            };
+            dockerIntegration = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Enable Docker Desktop integration";
+            };
+            atticIntegration = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Enable Attic binary cache client";
+            };
+            ccache = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Enable ccache compiler cache";
+            };
           };
 
-          security.sudo = {
-            enable = true;
-            wheelNeedsPassword = false;
-          };
-
-          services = {
-            openssh.enable = true;
-            vscode-server.enable = true;
-            logrotate.checkConfig = false;
-          };
-
-          system = {
-            stateVersion = "24.11";
-            autoUpgrade = {
+          config = {
+            wsl = {
               enable = true;
-              allowReboot = false;
-              dates = "daily";
-              flake = "github:Avunu/nixos-wsl";
-              flags = [
-                "--update-input"
-                "nixpkgs"
-                "--refresh"
-                "--impure"
+              defaultUser = cfg.defaultUser;
+              docker-desktop.enable = cfg.dockerIntegration;
+              startMenuLaunchers = true;
+              useWindowsDriver = true;
+            };
+
+            environment = {
+              systemPackages =
+                with pkgs;
+                lib.flatten [
+                  (python3.withPackages (
+                    python-pkgs: with python-pkgs; [
+                      black
+                      flake8
+                      isort
+                      pandas
+                      requests
+                    ]
+                  ))
+                  [
+                    bun
+                    cmake
+                    corepack_22
+                    curl
+                    gh
+                    git
+                    gnumake
+                    nano
+                    nixfmt-rfc-style
+                    nixos-container
+                    nixpkgs-fmt
+                    nodejs_22
+                    tzdata
+                    wget
+                  ]
+                  (lib.optional cfg.ccache pkgs.ccache)
+                  (lib.optional cfg.atticIntegration attic.packages.${pkgs.system}.attic)
+                  cfg.extraPackages
+                ];
+            };
+
+            hardware.graphics = {
+              enable = true;
+              extraPackages = with pkgs; [ mesa ];
+            };
+
+            nix.settings = {
+              experimental-features = [
+                "nix-command"
+                "flakes"
+              ];
+              extra-sandbox-paths = lib.mkIf cfg.ccache [ "/var/cache/ccache" ];
+              substituters = lib.flatten [
+                [
+                  "https://cache.nixos.org?priority=40"
+                  "https://nix-community.cachix.org?priority=41"
+                  "https://numtide.cachix.org?priority=42"
+                ]
+                (lib.optional cfg.atticIntegration "https://attic.batonac.com/k3s?priority=43")
+              ];
+              trusted-public-keys = lib.flatten [
+                [
+                  "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+                  "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+                  "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+                ]
+                (lib.optional cfg.atticIntegration "k3s:A8GYNJNy2p/ZMtxVlKuy1nZ8bnZ84PVfqPO6kg6A6qY=")
+              ];
+              trusted-users = [
+                "root"
+                cfg.defaultUser
+                "@wheel"
               ];
             };
-          };
 
-          users = {
-            users.nixos = {
-              extraGroups = [
-                "docker"
-                "libvirtd"
-                "wheel"
+            programs = {
+              ccache = lib.mkIf cfg.ccache {
+                cacheDir = "/var/cache/ccache";
+                enable = true;
+              };
+              direnv.enable = true;
+              nix-ld.enable = true;
+            };
+
+            security.sudo = {
+              enable = true;
+              wheelNeedsPassword = false;
+            };
+
+            services = {
+              openssh.enable = true;
+              vscode-server.enable = lib.mkIf cfg.vscodeIntegration true;
+              logrotate.checkConfig = false;
+            };
+
+            system = {
+              stateVersion = cfg.stateVersion;
+              autoUpgrade = {
+                enable = true;
+                allowReboot = false;
+                dates = "daily";
+                flake = "/etc/nixos/flake.nix";
+                flags = [
+                  "--update-input"
+                  "nixpkgs"
+                  "--update-input"
+                  "nixos-wsl-host"
+                  "--refresh"
+                  "--impure"
+                ];
+              };
+            };
+
+            users.users.${cfg.defaultUser} = {
+              extraGroups = lib.flatten [
+                [ "wheel" ]
+                (lib.optional cfg.dockerIntegration "docker")
               ];
               isNormalUser = true;
-              openssh.authorizedKeys.keys = [
-                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOv4SpIhHJqtRaYBRQOin4PTDUxRwo7ozoQHTUFjMGLW avunu@AvunuCentral"
-              ];
+              openssh.authorizedKeys.keys = cfg.sshKeys;
               shell = pkgs.bash;
             };
           };
         };
-    in
-    {
-      nixosConfigurations = {
-        nixos = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            nixos-wsl.nixosModules.default
-            vscode-server.nixosModules.default
-            commonModule
-            (
-              {
-                config,
-                pkgs,
-                lib,
-                ...
-              }:
-              {
-                config = lib.mkMerge [
-                  (lib.mkIf isWSL (wslModule {
-                    inherit config pkgs lib;
-                  }))
-                  (lib.mkIf (!isWSL) (hypervModule {
-                    inherit config pkgs lib;
-                  }))
-                ];
-              }
-            )
-          ];
-        };
-      };
     };
 }

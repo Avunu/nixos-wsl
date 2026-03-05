@@ -1,9 +1,29 @@
-Avunu NixOS-WSL config for local development. Apply within [NixOS-WSL](https://github.com/nix-community/NixOS-WSL) with:
+# NixOS WSL
+
+A modular NixOS configuration for [NixOS-WSL](https://github.com/nix-community/NixOS-WSL).
+
+## Quick Start
+
+Bootstrap a new WSL instance by pulling the local config into place and rebuilding:
+
 ```bash
-nixos-rebuild switch --flake github:Avunu/nixos-wsl#nixos --refresh --impure
+curl -fsSL https://raw.githubusercontent.com/Avunu/nixos-wsl/main/local/flake.nix | \
+  sudo install -Dm644 /dev/stdin /etc/nixos/flake.nix && \
+  sudo nixos-rebuild switch --flake /etc/nixos#nixos --impure
 ```
-IF it fails, try:
+
+## Subsequent Updates
+
+```bash
+sudo nixos-rebuild switch --flake github:Avunu/nixos-wsl#nixos --refresh --impure
+```
+
+## Recovery
+
+If a rebuild fails, recover with:
+
 ```powershell
 wsl -d NixOS --system --user root -- /mnt/wslg/distro/bin/nixos-wsl-recovery
 ```
-then retry the above command.
+
+Then retry the rebuild command.
