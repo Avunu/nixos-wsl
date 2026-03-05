@@ -6,7 +6,7 @@ A modular NixOS configuration for [NixOS-WSL](https://github.com/nix-community/N
 
 First, install a [NixOS-WSL instance with the default configuration](https://nix-community.github.io/NixOS-WSL/install.html).
 
-Bootstrap a new WSL instance by pulling the local config into place and rebuilding:
+Then, rebase your local config based on this repository (run in your NixOS-WSL instance):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Avunu/nixos-wsl/main/local/flake.nix | \
