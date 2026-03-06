@@ -29,8 +29,8 @@
                 ];
                 vscodeIntegration = true;
                 dockerIntegration = false;
-                atticIntegration = true;
-                ccache = true;
+                atticIntegration = false;
+                ccache = false;
                 extraPackages = [ ];
               };
             }
