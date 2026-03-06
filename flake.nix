@@ -112,16 +112,15 @@
                   [
                     bun
                     cmake
-                    corepack_22
                     curl
                     gh
                     git
                     gnumake
                     nano
-                    nixfmt-rfc-style
+                    nixfmt
                     nixos-container
                     nixpkgs-fmt
-                    nodejs_22
+                    nodejs_latest
                     tzdata
                     wget
                   ]
@@ -170,8 +169,37 @@
                 cacheDir = "/var/cache/ccache";
                 enable = true;
               };
-              direnv.enable = true;
-              nix-ld.enable = true;
+              direnv = {
+                enable = true;
+                angrr = {
+                  autoUse = true;
+                  enable = true;
+                };
+                nix-direnv.enable = true;
+                enableBashIntegration = true;
+              };
+              git = {
+                enable = true;
+                config.safe.directory = [
+                  "/etc/nixos"
+                  "/home/${cfg.defaultUser}/"
+                ];
+              };
+              nix-ld = {
+                enable = mkDefault true;
+                package = pkgs.nix-ld;
+                libraries = with pkgs; [
+                  alsa-lib
+                  glib
+                  json-glib
+                  libxkbcommon
+                  openssl
+                  vulkan-loader
+                  vulkan-validation-layers
+                  wayland
+                  zstd
+                ];
+              };
             };
 
             security.sudo = {
