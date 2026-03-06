@@ -2,8 +2,12 @@
   description = "NixOS WSL Configuration";
 
   inputs = {
-    attic.url = "github:zhaofengli/attic";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    attic = {
+      url = "github:zhaofengli/attic";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs";
+    };
     nixos-wsl = {
       url = "github:nix-community/NixOS-WSL/main";
       inputs.nixpkgs.follows = "nixpkgs";
