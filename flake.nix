@@ -89,6 +89,11 @@
               default = true;
               description = "Enable ccache compiler cache";
             };
+            emulatedSystems = mkOption {
+              type = types.listOf types.str;
+              default = [ "aarch64-linux" ];
+              description = "Systems to emulate via binfmt (passed through to boot.binfmt.emulatedSystems)";
+            };
           };
 
           config = {
@@ -234,6 +239,8 @@
                 ];
               };
             };
+
+            boot.binfmt.emulatedSystems = cfg.emulatedSystems;
 
             users.users.${cfg.defaultUser} = {
               extraGroups = lib.flatten [
