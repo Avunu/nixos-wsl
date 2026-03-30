@@ -135,6 +135,9 @@
                   ]
                   (lib.optional cfg.ccache pkgs.ccache)
                   (lib.optional cfg.atticIntegration attic.packages.${pkgs.system}.attic)
+                  (writeShellScriptBin "system-upgrade" ''
+                    sudo sh -c 'cd /etc/nixos && nix flake update && nixos-rebuild switch --impure'
+                  '')
                   cfg.extraPackages
                 ];
             };
