@@ -123,6 +123,15 @@
               systemPackages =
                 with pkgs;
                 lib.flatten [
+                  (pkgs.writeShellApplication {
+                    name = "devsh";
+                    runtimeInputs = with pkgs; [
+                      nix
+                    ];
+                    text = ''
+                      nix develop --no-pure-eval
+                    '';
+                  })
                   (python3.withPackages (
                     python-pkgs: with python-pkgs; [
                       black
