@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  # Nix flake inputs. Grouped into one PR, as in nixos-router, so nixpkgs and
+  # nixos-wsl move together. Not auto-merged: the only gate is the eval in
+  # checks.yml, which does not boot anything, so a human reads these.
+  - package-ecosystem: nix
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+    groups:
+      nix:
+        patterns: ["*"]
+
+  # The CI that gates everything else. Actions are pinned to commit SHAs, and
+  # Dependabot updates the SHA and its `# vX` comment together. Cooldown keeps
+  # a freshly published action from running with the repository's token before
+  # anyone else has had a look.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: chore
+    groups:
+      actions:
+        patterns: ["*"]

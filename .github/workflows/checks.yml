@@ -1,0 +1,50 @@
+# CI for pull requests and for `main`.
+#
+# One job. `nix flake check` runs the eval of the example host and the nixfmt
+# pre-commit hook; system-upgrade is built by name below, since no check
+# depends on it. There are no VM tests here, so this is the whole gate: a
+# change that evaluates but breaks the WSL boot path is only caught on a
+# real machine.
+#
+# Make the job "checks" a required status check in the `main` ruleset before
+# relying on it.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # `determinate: false` — this flake declares no Determinate-only
+      # nixConfig, so the default installer would only try to log into FlakeHub
+      # and log a failure annotation.
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+        with:
+          determinate: false
+
+      # `use-flakehub: false` for the same reason as above.
+      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+        with:
+          use-flakehub: false
+
+      - name: nix flake check (eval, pre-commit hooks)
+        run: nix flake check -L
+
+      - name: Build system-upgrade
+        run: nix build --no-link -L '.#packages.x86_64-linux.system-upgrade'

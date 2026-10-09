@@ -16,6 +16,11 @@
       url = "github:nix-community/nixos-vscode-server";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Pre-commit hooks, run by `nix flake check` and installed by the devShell.
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -25,10 +30,13 @@
       nixpkgs,
       nixos-wsl,
       vscode-server,
+      git-hooks,
       ...
     }:
     let
       lib = nixpkgs.lib;
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       nixosModules.wsl =
@@ -41,6 +49,12 @@
         with lib;
         let
           cfg = config.wslHost;
+
+          # `--impure` is what the old autoUpgrade and README rebuilds passed.
+          systemUpgrade = import ./pkgs/system-upgrade.nix {
+            inherit pkgs;
+            extraFlags = "--impure";
+          };
         in
         {
           imports = [
@@ -135,9 +149,7 @@
                   ]
                   (lib.optional cfg.ccache pkgs.ccache)
                   (lib.optional cfg.atticIntegration attic.packages.${pkgs.system}.attic)
-                  (writeShellScriptBin "system-upgrade" ''
-                    sudo sh -c 'cd /etc/nixos && nix flake update && nixos-rebuild switch --impure'
-                  '')
+                  systemUpgrade
                   cfg.extraPackages
                 ];
             };
@@ -225,21 +237,46 @@
               logrotate.checkConfig = false;
             };
 
-            system = {
-              stateVersion = cfg.stateVersion;
-              autoUpgrade = {
-                enable = true;
-                allowReboot = false;
-                dates = "daily";
-                flake = "/etc/nixos/flake.nix";
-                flags = [
-                  "--update-input"
-                  "nixpkgs"
-                  "--update-input"
-                  "nixos-wsl-host"
-                  "--refresh"
-                  "--impure"
-                ];
+            # The daily upgrade runs `system-upgrade`, which rebuilds only when
+            # the lock moved. NixOS's own system.autoUpgrade stays off, as in
+            # nixos-dev-host: it rebuilds every day whether or not anything did.
+            # It never reboots.
+            system.stateVersion = cfg.stateVersion;
+
+            systemd.services.system-upgrade = {
+              restartIfChanged = false;
+              unitConfig = {
+                Description = "Upgrade NixOS from /etc/nixos";
+                StartLimitIntervalSec = 300;
+                StartLimitBurst = 5;
+              };
+              serviceConfig = {
+                Type = "oneshot";
+                User = "root";
+                Environment = "HOME=/root";
+                ExecStart = getExe systemUpgrade;
+                Restart = "on-failure";
+                RestartSec = "120s";
+                # A full flake evaluation and rebuild, unattended, while someone
+                # may be using the machine. It should be the process that yields.
+                MemoryHigh = mkDefault "25%";
+                CPUWeight = mkDefault 20;
+                Nice = mkDefault 19;
+              };
+              wants = [ "network-online.target" ];
+              after = [ "network-online.target" ];
+              path = [
+                pkgs.git
+                pkgs.nix
+              ];
+            };
+
+            systemd.timers.system-upgrade = {
+              wantedBy = [ "timers.target" ];
+              timerConfig = {
+                OnCalendar = "daily";
+                Persistent = true;
+                Unit = "system-upgrade.service";
               };
             };
 
@@ -256,5 +293,45 @@
             };
           };
         };
+
+      packages.${system}.system-upgrade = import ./pkgs/system-upgrade.nix {
+        inherit pkgs;
+        extraFlags = "--impure";
+      };
+
+      formatter.${system} = pkgs.nixfmt;
+
+      # A configuration that exists only to be evaluated, as in nixos-dev-host:
+      # the eval check forces every option merge, assertion and warning in the
+      # module, so an error shows up here rather than on a machine.
+      nixosConfigurations.example = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          self.nixosModules.wsl
+          { wslHost.defaultUser = "example"; }
+        ];
+      };
+
+      checks.${system} = {
+        eval = pkgs.runCommand "wsl-eval-check" { } ''
+          echo "${builtins.unsafeDiscardStringContext self.nixosConfigurations.example.config.system.build.toplevel.drvPath}" > "$out"
+        '';
+
+        pre-commit = git-hooks.lib.${system}.run {
+          src = ./.;
+          hooks.nixfmt = {
+            enable = true;
+            package = pkgs.nixfmt;
+          };
+        };
+      };
+
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          pkgs.nixfmt
+          pkgs.prek
+        ];
+        inherit (self.checks.${system}.pre-commit) shellHook;
+      };
     };
 }

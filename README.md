@@ -20,6 +20,19 @@ curl -fsSL https://raw.githubusercontent.com/Avunu/nixos-wsl/main/local/flake.ni
 sudo nixos-rebuild switch --flake github:Avunu/nixos-wsl#nixos --refresh --impure
 ```
 
+`system-upgrade` does the same from `/etc/nixos`, and only rebuilds if the flake lock moved. A daily timer runs it too.
+
+## Development
+
+```bash
+nix develop                    # nixfmt, prek, and the pre-commit hooks
+nix flake check                # eval of the example host, plus the hooks
+nix build .#system-upgrade     # the upgrade script on its own
+nix fmt
+```
+
+`.github/workflows/checks.yml` runs `nix flake check` on every pull request and push to `main`. Dependabot keeps the flake inputs and the pinned action SHAs current.
+
 ## Recovery
 
 If a rebuild fails, recover with:
