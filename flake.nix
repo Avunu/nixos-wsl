@@ -50,9 +50,10 @@
         let
           cfg = config.wslHost;
 
-          # `--impure` is what the old autoUpgrade and README rebuilds passed.
+          # `--impure` is what the README rebuild passes.
           systemUpgrade = import ./pkgs/system-upgrade.nix {
             inherit pkgs;
+            flake = cfg.upgradeFlake;
             extraFlags = "--impure";
           };
         in
@@ -63,6 +64,16 @@
           ];
 
           options.wslHost = {
+            upgradeFlake = mkOption {
+              type = types.str;
+              default = "github:Avunu/nixos-wsl#nixos";
+              description = ''
+                The flake `system-upgrade` (and its daily timer) rebuilds from.
+                A `github:` reference switches to the repository's HEAD when it
+                moves; a path such as /etc/nixos updates that flake's lock and
+                switches when the lock moves.
+              '';
+            };
             defaultUser = mkOption {
               type = types.str;
               default = "nixos";
@@ -168,6 +179,10 @@
               extraPackages = with pkgs; [ mesa ];
             };
 
+            # Point `nix-shell -p` and `<nixpkgs>` at the same nixpkgs the system
+            # was built from.
+            nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+
             nix.settings = {
               experimental-features = [
                 "nix-command"
@@ -214,7 +229,6 @@
               git = {
                 enable = true;
                 config.safe.directory = [
-                  "/etc/nixos"
                   "/home/${cfg.defaultUser}/"
                 ];
               };
@@ -247,7 +261,7 @@
             };
 
             # The daily upgrade runs `system-upgrade`, which rebuilds only when
-            # the lock moved. NixOS's own system.autoUpgrade stays off, as in
+            # the repository (or, for a local flake, its lock) moved. NixOS's own system.autoUpgrade stays off, as in
             # nixos-dev-host: it rebuilds every day whether or not anything did.
             # It never reboots.
             system.stateVersion = cfg.stateVersion;
@@ -255,7 +269,7 @@
             systemd.services.system-upgrade = {
               restartIfChanged = false;
               unitConfig = {
-                Description = "Upgrade NixOS from /etc/nixos";
+                Description = "Upgrade NixOS from ${cfg.upgradeFlake}";
                 StartLimitIntervalSec = 300;
                 StartLimitBurst = 5;
               };
@@ -305,25 +319,44 @@
 
       packages.${system}.system-upgrade = import ./pkgs/system-upgrade.nix {
         inherit pkgs;
+        flake = "github:Avunu/nixos-wsl#nixos";
         extraFlags = "--impure";
       };
 
       formatter.${system} = pkgs.nixfmt;
 
-      # A configuration that exists only to be evaluated, as in nixos-dev-host:
-      # the eval check forces every option merge, assertion and warning in the
-      # module, so an error shows up here rather than on a machine.
-      nixosConfigurations.example = nixpkgs.lib.nixosSystem {
+      # The configuration every WSL install runs, straight from this
+      # repository:
+      #   sudo nixos-rebuild switch --flake github:Avunu/nixos-wsl#nixos --refresh --impure
+      # Its inputs are pinned by this repository's flake.lock, which Dependabot
+      # moves; the daily system-upgrade timer picks up each merge to `main`.
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
           self.nixosModules.wsl
-          { wslHost.defaultUser = "example"; }
+          {
+            # What `system-upgrade` compares against the repository's HEAD.
+            system.configurationRevision = self.rev or self.dirtyRev or null;
+
+            wslHost = {
+              defaultUser = "nixos";
+              stateVersion = "25.11";
+              sshKeys = [
+                "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOv4SpIhHJqtRaYBRQOin4PTDUxRwo7ozoQHTUFjMGLW avunu@AvunuCentral"
+              ];
+              vscodeIntegration = true;
+              dockerIntegration = false;
+              atticIntegration = false;
+              ccache = false;
+              extraPackages = [ ];
+            };
+          }
         ];
       };
 
       checks.${system} = {
         eval = pkgs.runCommand "wsl-eval-check" { } ''
-          echo "${builtins.unsafeDiscardStringContext self.nixosConfigurations.example.config.system.build.toplevel.drvPath}" > "$out"
+          echo "${builtins.unsafeDiscardStringContext self.nixosConfigurations.nixos.config.system.build.toplevel.drvPath}" > "$out"
         '';
 
         pre-commit = git-hooks.lib.${system}.run {

@@ -1,6 +1,6 @@
 # CI for pull requests and for `main`.
 #
-# One job. `nix flake check` runs the eval of the example host and the nixfmt
+# One job. `nix flake check` runs the eval of the `nixos` host and the nixfmt
 # pre-commit hook; system-upgrade is built by name below, since no check
 # depends on it. There are no VM tests here, so this is the whole gate: a
 # change that evaluates but breaks the WSL boot path is only caught on a

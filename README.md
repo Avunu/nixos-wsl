@@ -6,27 +6,23 @@ A modular NixOS configuration for [NixOS-WSL](https://github.com/nix-community/N
 
 First, install a [NixOS-WSL instance with the default configuration](https://nix-community.github.io/NixOS-WSL/install.html).
 
-Then, rebase your local config based on this repository (run in your NixOS-WSL instance):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Avunu/nixos-wsl/main/local/flake.nix | \
-  sudo install -Dm644 /dev/stdin /etc/nixos/flake.nix && \
-  sudo nixos-rebuild switch --flake /etc/nixos#nixos --impure
-```
-
-## Subsequent Updates
+Then, switch it to this repository's configuration (run in your NixOS-WSL instance):
 
 ```bash
 sudo nixos-rebuild switch --flake github:Avunu/nixos-wsl#nixos --refresh --impure
 ```
 
-`system-upgrade` does the same from `/etc/nixos`, and only rebuilds if the flake lock moved. A daily timer runs it too.
+There is no local flake: the configuration and its pinned inputs live here, and `/etc/nixos` is not used.
+
+## Updates
+
+Dependabot moves the flake inputs in this repository. Once a change lands on `main`, a daily timer on each machine runs `system-upgrade`, which rebuilds from `github:Avunu/nixos-wsl#nixos` only when the repository's revision differs from the one the running system was built from. Run `system-upgrade` to pull it in sooner, or rerun the command above.
 
 ## Development
 
 ```bash
 nix develop                    # nixfmt, prek, and the pre-commit hooks
-nix flake check                # eval of the example host, plus the hooks
+nix flake check                # eval of the `nixos` host, plus the hooks
 nix build .#system-upgrade     # the upgrade script on its own
 nix fmt
 ```
