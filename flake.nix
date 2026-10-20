@@ -164,6 +164,7 @@
                     nixos-container
                     nixpkgs-fmt
                     nodejs_latest
+                    prek
                     tzdata
                     wget
                   ]
