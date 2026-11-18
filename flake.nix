@@ -226,6 +226,22 @@
                 };
                 nix-direnv.enable = true;
                 enableBashIntegration = true;
+                # nix-direnv 3.2.0 bug (nix-community/nix-direnv#786): the
+                # cached-shell path calls _nix_refresh_gcroots, whose
+                # `touch -h .direnv/flake-profile-*` glob also matches
+                # flake-profile-<hash>.rc — the file use_flake watch_file()s.
+                # Every load then invalidates every other consumer of the same
+                # .envrc (extra terminals, `direnv exec`, the VS Code direnv
+                # extension), which re-evaluate and touch it again, without
+                # end. Fixed on master (#790, "Don't refresh gcroots"), not
+                # yet released. Redefining the function after nix-direnv is
+                # sourced is enough; angrr (above) keeps the GC roots alive.
+                # Remove once nixpkgs ships a nix-direnv newer than 3.2.0.
+                # (Patching the package instead does not work: its direnvrc is
+                # resholved before patchPhase sees it, so the hunks miss.)
+                direnvrcExtra = ''
+                  _nix_refresh_gcroots() { :; }
+                '';
               };
               git = {
                 enable = true;
